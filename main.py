@@ -35,6 +35,7 @@ def tictactoe():
     if "board" not in st.session_state:
         st.session_state.board = np.full((3, 3), ".", dtype=str)
         st.session_state.next_player = "X"
+        st.session_state.player = "O" if st.session_state.next_player == "X" else "X"
         st.session_state.winner = None
 
     # Define callbacks to handle button clicks.
@@ -44,8 +45,12 @@ def tictactoe():
             st.session_state.next_player = (
                 "O" if st.session_state.next_player == "X" else "X"
             )
-            if st.session_state.next_player == "O":
-                    minmax(1, st.session_state.board, True)
+
+            if st.session_state.player == "O":
+                botMove(st.session_state.board)
+                st.session_state.next_player = (
+                    "O" if st.session_state.next_player == "X" else "X"
+                )
             winner = checkWin(st.session_state.board)
             if winner != ".":
                 st.session_state.winner = winner
@@ -64,13 +69,12 @@ def tictactoe():
     if st.session_state.winner:
         st.success(f"Congrats! {st.session_state.winner} won the game! 🎈")
 
-    #count number of empty fields in board
-    
-    #if count == 0:
-    #    st.write("It's a draw!")
-    
+    # count number of empty fields in board
+    if countEmptyFields(st.session_state.board) == 0 and st.session_state.winner == None:
+        st.warning("Game over! It's a draw! 🙈")
 
-#count empty fields in board
+
+# count empty fields in board
 def countEmptyFields(board):
     count = 0
     for i in range(3):
@@ -79,54 +83,81 @@ def countEmptyFields(board):
                 count += 1
     return count
 
-#fill empty field with O
-def fillEmptyField(board):
+# fill empty field with O
+
+
+# def fillEmptyField(board):
+#     for i in range(3):
+#         for j in range(3):
+#             if board[i][j] == '.':
+#                 board[i][j] = 'O'
+#                 return board
+
+
+# bot move
+def botMove(board):
+    bestScore = -math.inf
+    bestMove = 0
+    
+
     for i in range(3):
         for j in range(3):
             if board[i][j] == '.':
                 board[i][j] = 'O'
-                return board
+                # st.write(board)
+                score = minimax(board, False)
+                # st.write("score", score)
+                board[i][j] = '.'
+                print("Preloop")
+                if score > bestScore:
+                    print("postloop")
+                    bestScore = score
+                # move = max(score, bestScore)
+                    bestMove = [i, j]
+                    print("here")
+    board[bestMove[0]][bestMove[1]] = 'O'
+
+    # print(board)
+    # print(bestMove)
+    # board[bestMove[0]][bestMove[1]] = 'O'
 
 
-def minmax(depth, board, isMaximizer):
-    global counter
-    winner = st.session_state.winner
-    if winner:
-        counter += 1
-        if winner == 'X':
-            return -10 + depth
-        elif winner == 'O':
-            return 10 +depth
+def minimax(board, isMaximizing):
+    result = checkWin(board)
+    if result != None:
+        if result == 'X':
+            return -1
+        elif result == 'O':
+            return 1
         else:
             return 0
 
-    if isMaximizer:
-        bestScore = -100
-        for i in range(countEmptyFields(st.session_state.board)):
-            newBoard = np.copy(st.session_state.board)
-            index = fillEmptyField(newBoard)
-            eval = minmax(depth -1, newBoard, False)
-            if eval > bestScore:
-                bestScore = eval
-                bestMove = index
-        if depth == 0:
-             return bestMove
+    if st.session_state.player == 'O':
+        isMaximizing = True
+    
+    if isMaximizing:
+        bestScore = -math.inf
+        for i in range(3):
+            for j in range(3):
+                if board[i][j] == '.':
+                    board[i][j] = 'O'
+                    score = minimax(board, False)
+                    # st.write("score", score)
+                    board[i][j] = '.'
+                    bestScore = max(score, bestScore)
+        # st.write("Best Score", bestScore)
         return bestScore
     else:
-        bestScore = 100
-        for i in range(countEmptyFields(st.session_state.board)):
-            newBoard = np.copy(st.session_state.board)
-            index = fillEmptyField(newBoard)
-            eval = minmax(depth - 1, newBoard, True)
-            if eval < bestScore:
-                bestScore = eval
-                bestMove = index
-        if depth == 0:
-            return bestMove
+        bestScore = math.inf
+        for i in range(3):
+            for j in range(3):
+                if board[i][j] == '.':
+                    board[i][j] = 'X'
+                    score = minimax(board,True)
+                    board[i][j] = '.'
+                    bestScore = min(score, bestScore)
+        # st.write("Min_score", bestScore)
         return bestScore
-        
-
-
 
 
 if __name__ == '__main__':
