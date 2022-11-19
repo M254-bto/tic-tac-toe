@@ -105,7 +105,7 @@ def botMove(board):
             if board[i][j] == '.':
                 board[i][j] = 'O'
                 # st.write(board)
-                score = minimax(board, False)
+                score = minimax(board, countEmptyFields(board), False)
                 # st.write("score", score)
                 board[i][j] = '.'
                 print("Preloop")
@@ -122,7 +122,7 @@ def botMove(board):
     # board[bestMove[0]][bestMove[1]] = 'O'
 
 
-def minimax(board, isMaximizing):
+def minimax(board, depth, isMaximizing):
     result = checkWin(board)
     if result != None:
         if result == 'X':
@@ -137,11 +137,12 @@ def minimax(board, isMaximizing):
     
     if isMaximizing:
         bestScore = -math.inf
+   
         for i in range(3):
             for j in range(3):
                 if board[i][j] == '.':
                     board[i][j] = 'O'
-                    score = minimax(board, False)
+                    score = minimax(board,depth+1, False)
                     # st.write("score", score)
                     board[i][j] = '.'
                     bestScore = max(score, bestScore)
@@ -149,11 +150,12 @@ def minimax(board, isMaximizing):
         return bestScore
     else:
         bestScore = math.inf
+    
         for i in range(3):
             for j in range(3):
                 if board[i][j] == '.':
                     board[i][j] = 'X'
-                    score = minimax(board,True)
+                    score = minimax(board,depth+1, True)
                     board[i][j] = '.'
                     bestScore = min(score, bestScore)
         # st.write("Min_score", bestScore)
